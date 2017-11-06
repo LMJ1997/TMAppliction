@@ -10,13 +10,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -25,7 +24,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.BinaryHttpResponseHandler;
 
 import org.json.JSONArray;
@@ -60,9 +58,6 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
 
     private EditText phoneNumLogin;
     private EditText passwordLogin;
-    private TextView newUserRegister;
-    private TextView forgetPassword;
-    private Button login;
 
     private long getStartTimeOfDay(long now) {
         Calendar calendar = Calendar.getInstance();
@@ -84,9 +79,9 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
             autoLogin();
         }
 
-        login = (Button)findViewById(R.id.login_button);
-        newUserRegister = (TextView) findViewById(R.id.new_user_register);
-        forgetPassword = (TextView)findViewById(R.id.forget_password);
+        Button login = (Button) findViewById(R.id.login_button);
+        TextView newUserRegister = (TextView) findViewById(R.id.new_user_register);
+        TextView forgetPassword = (TextView) findViewById(R.id.forget_password);
         passwordLogin = (EditText)findViewById(R.id.password_login);
         phoneNumLogin = (EditText)findViewById(R.id.phoneNum_login);
         phoneNumLogin.setText(pref.getString("phoneNumber", ""));
@@ -99,44 +94,40 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
         forgetPassword.setOnClickListener(this);
 
     }
+    @SuppressLint("ShowToast")
     @Override
     protected void onResume(){
         super.onResume();
         UsageStatsManager mUsageStatsManager = (UsageStatsManager) this.
         getSystemService(Context.USAGE_STATS_SERVICE);
         Calendar cal = Calendar.getInstance();
-        long endTime =cal.getTimeInMillis();;
+        long endTime =cal.getTimeInMillis();
         long startTime = getStartTimeOfDay(endTime);
-        List<UsageStats> queryUsageStats =queryUsageStats = mUsageStatsManager.queryUsageStats(INTERVAL_DAILY,startTime,endTime);
+        assert mUsageStatsManager != null;
+        List<UsageStats> queryUsageStats = mUsageStatsManager.queryUsageStats(INTERVAL_DAILY,startTime,endTime);
         if (queryUsageStats.size() == 0) {
-            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP)
-            {
-                AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-                dialog.setTitle("Error");
-                dialog.setCancelable(false);
-                dialog.setMessage("请您在使用前先设置权限");
-                dialog.setNegativeButton("设置", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        try{
-                            startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
-                        }catch (Exception e){
-                            Toast.makeText( getApplicationContext(),"无法开启查看使用情况的应用程序的面板",Toast.LENGTH_SHORT).show();
-                        }
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+            dialog.setTitle("Error");
+            dialog.setCancelable(false);
+            dialog.setMessage("请您在使用前先设置权限");
+            dialog.setNegativeButton("设置", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    try{
+                        startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
+                    }catch (Exception e){
+                        Toast.makeText( getApplicationContext(),"无法开启查看使用情况的应用程序的面板",Toast.LENGTH_SHORT).show();
                     }
-                });
+                }
+            });
 
-                dialog.setPositiveButton("取消", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        android.os.Process.killProcess(android.os.Process.myPid());
-                    }
-                });
-                dialog.show();
-            }
-            else{
-                Toast.makeText(this,"您的安卓版本过低，无法使用此应用",Toast.LENGTH_SHORT);
-            }
+            dialog.setPositiveButton("取消", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    android.os.Process.killProcess(android.os.Process.myPid());
+                }
+            });
+            dialog.show();
         }
     }
 
@@ -193,6 +184,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
         }
     }
 
+    @SuppressLint("HandlerLeak")
     Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -226,6 +218,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
             else if (msg.what == WRITE_TO_SP_SUCCESS) {
                 File dir = new File(getExternalCacheDir() + "/" + phoneNumLogin.getText().toString());
                 if (!(dir).exists()) {
+                    //noinspection ResultOfMethodCallIgnored
                     dir.mkdir();
                 }
                 if(!(img.equals("null"))) {
@@ -243,8 +236,10 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
                             try {
                                 // 若存在则删除
                                 if (file.exists())
+                                    //noinspection ResultOfMethodCallIgnored
                                     file.delete();
                                 // 创建文件
+                                //noinspection ResultOfMethodCallIgnored
                                 file.createNewFile();
                                 //
                                 OutputStream stream = new FileOutputStream(file);
@@ -288,6 +283,7 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
         SharedPreferences s = getSharedPreferences("userinfo", MODE_PRIVATE);
         for (File child: new File(context.getExternalCacheDir() + "/" + s.getString("phoneNumber", "")).listFiles()) {
             if (!(child.getName().equals(imageName))) {
+                //noinspection ResultOfMethodCallIgnored
                 child.delete();
             }
         }
