@@ -1,5 +1,7 @@
 package com.example.tmappliction;
 
+import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
@@ -42,13 +44,9 @@ import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
 
-/**
- * Created by dell on 2017/8/10.
- */
-
 public class TodayFragment extends Fragment {
-
     private static final String TAG = "TodayFragment";
+    @SuppressLint("SimpleDateFormat")
     private DateFormat mDateFormat = new SimpleDateFormat();
 
     @Override
@@ -56,15 +54,11 @@ public class TodayFragment extends Fragment {
         LitePal.initialize(getContext());
         View view = inflater.inflate(R.layout.today, container, false);
         initAll(view);
+        View pview = view;
         return view;
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        initAll(getView());
-    }
-
+    @SuppressLint("SetTextI18n")
     private void initAll(View view) {
         int param_time;//当天所用手机总时间
         TextView totalTime = (TextView) view.findViewById(R.id.total_today);
@@ -126,42 +120,11 @@ public class TodayFragment extends Fragment {
 
         switch(intervalType){
             case  UsageStatsManager.INTERVAL_DAILY:
-
-
                 queryUsageStats = mUsageStatsManager.queryUsageStats(intervalType,startTime,endTime);
-                if (queryUsageStats.size() == 0) {
-                    if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP)
-                    {
-                        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());//获取当前碎片所处的上下文？？？？
-                        dialog.setTitle("Error");
-                        dialog.setMessage("请您在使用前先设置权限");
-                        dialog.setNegativeButton("设置", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                try{
-                                    startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
-                                }catch (Exception e){
-                                    Toast.makeText(getActivity(),"无法开启查看使用情况的应用程序的面板",Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        });
-                        dialog.setPositiveButton("取消", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                android.os.Process.killProcess(android.os.Process.myPid());
-                            }
-                        });
-                        dialog.show();
-                    }
-                    else{
-                        Toast.makeText(getActivity(),"您的安卓版本过低，无法使用此应用",Toast.LENGTH_SHORT);
-                    }
-                }
-                break;
+
             default:
                 break;
         }
-
         for (int i=queryUsageStats.size()-1; i>=0; i--) {
             if(queryUsageStats.get(i).getLastTimeUsed() < startTime)
                 queryUsageStats.remove(i);
@@ -171,8 +134,6 @@ public class TodayFragment extends Fragment {
             if(queryUsageStats.get(i).getTotalTimeInForeground()<90000)
                 queryUsageStats.remove(i);
         }
-
-
         //排序
         for(int i=0;i<queryUsageStats.size();i++){
             for(int j=i;j<queryUsageStats.size();j++){

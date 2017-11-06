@@ -2,13 +2,19 @@ package com.example.tmappliction;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
+import android.app.usage.UsageStats;
+import android.app.usage.UsageStatsManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.Settings;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,8 +36,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Calendar;
+import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
+
+import static android.app.usage.UsageStatsManager.INTERVAL_DAILY;
 
 public class Login extends AppCompatActivity implements View.OnClickListener {
 
@@ -54,14 +64,19 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
     private TextView forgetPassword;
     private Button login;
 
+    private long getStartTimeOfDay(long now) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(now);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTimeInMillis();
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
-        //SharedPreferences.Editor editor = getSharedPreferences("userinfo", MODE_PRIVATE).edit();
-        //editor.clear();
-        //editor.apply();
         mContext = this;
 
         SharedPreferences pref = getSharedPreferences("userinfo", MODE_PRIVATE);
@@ -83,6 +98,46 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
         newUserRegister.setOnClickListener(this);
         forgetPassword.setOnClickListener(this);
 
+    }
+    @Override
+    protected void onResume(){
+        super.onResume();
+        UsageStatsManager mUsageStatsManager = (UsageStatsManager) this.
+        getSystemService(Context.USAGE_STATS_SERVICE);
+        Calendar cal = Calendar.getInstance();
+        long endTime =cal.getTimeInMillis();;
+        long startTime = getStartTimeOfDay(endTime);
+        List<UsageStats> queryUsageStats =queryUsageStats = mUsageStatsManager.queryUsageStats(INTERVAL_DAILY,startTime,endTime);
+        if (queryUsageStats.size() == 0) {
+            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP)
+            {
+                AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+                dialog.setTitle("Error");
+                dialog.setCancelable(false);
+                dialog.setMessage("请您在使用前先设置权限");
+                dialog.setNegativeButton("设置", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        try{
+                            startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
+                        }catch (Exception e){
+                            Toast.makeText( getApplicationContext(),"无法开启查看使用情况的应用程序的面板",Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
+                dialog.setPositiveButton("取消", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        android.os.Process.killProcess(android.os.Process.myPid());
+                    }
+                });
+                dialog.show();
+            }
+            else{
+                Toast.makeText(this,"您的安卓版本过低，无法使用此应用",Toast.LENGTH_SHORT);
+            }
+        }
     }
 
     @Override
