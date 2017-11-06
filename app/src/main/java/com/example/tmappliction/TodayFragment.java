@@ -1,20 +1,15 @@
 package com.example.tmappliction;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -22,7 +17,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -34,27 +28,20 @@ import com.github.mikephil.charting.data.BarEntry;
 import org.litepal.LitePal;
 import org.litepal.crud.DataSupport;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import static android.content.Context.MODE_PRIVATE;
 
 public class TodayFragment extends Fragment {
-    private static final String TAG = "TodayFragment";
-    @SuppressLint("SimpleDateFormat")
-    private DateFormat mDateFormat = new SimpleDateFormat();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         LitePal.initialize(getContext());
         View view = inflater.inflate(R.layout.today, container, false);
         initAll(view);
-        View pview = view;
         return view;
     }
 
@@ -97,16 +84,6 @@ public class TodayFragment extends Fragment {
         return calendar.getTimeInMillis();
     }
 
-    private long getEndTimeOfDay(long now) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(now);
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
-        calendar.set(Calendar.MILLISECOND, 999);
-        return calendar.getTimeInMillis();
-    }
-
     public List<UsageStats> getUsageStatistics(int intervalType) {
         Calendar cal = Calendar.getInstance();
 
@@ -120,12 +97,14 @@ public class TodayFragment extends Fragment {
 
         switch(intervalType){
             case  UsageStatsManager.INTERVAL_DAILY:
+                assert mUsageStatsManager != null;
                 queryUsageStats = mUsageStatsManager.queryUsageStats(intervalType,startTime,endTime);
 
             default:
                 break;
         }
-        for (int i=queryUsageStats.size()-1; i>=0; i--) {
+        assert queryUsageStats != null;
+        for (int i = queryUsageStats.size()-1; i>=0; i--) {
             if(queryUsageStats.get(i).getLastTimeUsed() < startTime)
                 queryUsageStats.remove(i);
         }
@@ -156,14 +135,12 @@ public class TodayFragment extends Fragment {
         ArrayList<BarEntry> vals = new ArrayList<>();
         ArrayList<String>xVals = new ArrayList<>();
         barChart.setNoDataText("您今日未使用App");
-        List<UsageStats> mUsageStatsList = usageStatsList;
         Context mcontext = getActivity();
         PackageManager packageManager = mcontext.getPackageManager();
         ApplicationInfo applicationInfo ;
         int index = 0;
-        for(UsageStats usageStats: mUsageStatsList){
+        for(UsageStats usageStats: usageStatsList){
             totalTime += usageStats.getTotalTimeInForeground()/60000;
-            String aaa=mDateFormat.format(new Date(usageStats.getFirstTimeStamp()));
 
             try{
                 applicationInfo = packageManager.getApplicationInfo(usageStats.getPackageName(),0);
@@ -225,7 +202,7 @@ public class TodayFragment extends Fragment {
             }
         }
         //如果列表中没有当天数据，则新增一条数据
-        if(flag == false){
+        if(!flag){
             DayUsageStats tem = new DayUsageStats();
             tem.setMonth(month_today);
             tem.setDay(day_today);
