@@ -6,15 +6,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.telephony.TelephonyManager;
-import android.content.Context;
 import android.widget.TextView;
-import java.text.DecimalFormat;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
@@ -22,15 +18,10 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import org.litepal.crud.DataSupport;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-
 import static android.content.Context.MODE_PRIVATE;
-
-/**
- * Created by dell on 2017/8/10.
- */
 
 public class StatisticsFragment extends Fragment {
 
@@ -95,7 +86,7 @@ public class StatisticsFragment extends Fragment {
         ArrayList<String>xVals = new ArrayList<>();
         int i = 0;
         for(DayUsageStats tem : dayUsageStatsList){
-            Entry entry = new Entry(Float.valueOf(tem.getTotalTime()),i);
+            Entry entry = new Entry((float) tem.getTotalTime(),i);
             vals.add(entry);
             xVals.add("");
             i++;

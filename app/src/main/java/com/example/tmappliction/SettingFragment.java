@@ -7,18 +7,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.support.constraint.ConstraintLayout;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.Gravity;
@@ -30,29 +24,20 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 import com.yalantis.ucrop.UCrop;
-import com.yalantis.ucrop.UCropActivity;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-
-import com.loopj.android.http.RequestParams;
 
 import cz.msebera.android.httpclient.Header;
 
 import static android.app.Activity.RESULT_OK;
 import static android.content.Context.MODE_PRIVATE;
-
-/**
- * Created by dell on 2017/8/10.
- */
 
 public class SettingFragment extends Fragment implements View.OnClickListener {
 
@@ -60,23 +45,12 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
     private static final int UPLOAD_SUCCESS = 11;
     private static final int UPLOAD_FAILED = 12;
 
-    private Button logoutMy;
-    private TextView nicknameMy;
-    private TextView phoneNumMy;
     private Switch saveData;
     private ImageView avatarImg;
 
-    private ConstraintLayout accountSetting;
-    private ConstraintLayout messageAndRemind;
-    private ConstraintLayout privacy;
-    private ConstraintLayout aboutUs;
-    private ConstraintLayout update;
-
     private Context mContext;
     private SelectPicPopupWindow menuWindow;
-    private static final String IMAGE_FILE_NAME = "avatarImage.jpg";
     private static final int REQUESTCODE_PICK = 8;
-    private static final int REQUESTCODE_CUTTING = 7;
     private static ProgressDialog pd;
     private String imageName = "";
 
@@ -172,6 +146,7 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
         SharedPreferences s = getContext().getSharedPreferences("userinfo", MODE_PRIVATE);
         for (File child: new File(context.getExternalCacheDir() + "/" + s.getString("phoneNumber", "")).listFiles()) {
             if (!child.getName().equals(imageName)) {
+                //noinspection ResultOfMethodCallIgnored
                 child.delete();
             }
         }
@@ -296,8 +271,8 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
 
         mContext = getContext();
 
-        nicknameMy = (TextView)view.findViewById(R.id.nickname_my);
-        phoneNumMy = (TextView)view.findViewById(R.id.phoneNum_my);
+        TextView nicknameMy = (TextView) view.findViewById(R.id.nickname_my);
+        TextView phoneNumMy = (TextView) view.findViewById(R.id.phoneNum_my);
         saveData = (Switch)view.findViewById(R.id.switch_saveData);
         avatarImg = (ImageView)view.findViewById(R.id.avatarImg);
         avatarImg.setOnClickListener(this);
@@ -309,12 +284,12 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
         phoneNum = phoneNum.substring(0, 3) + "******" + phoneNum.substring(9);
         phoneNumMy.setText(phoneNum);
 
-        privacy = (ConstraintLayout)view.findViewById(R.id.privacy_my);
-        messageAndRemind = (ConstraintLayout)view.findViewById(R.id.message_and_remind_my);
-        accountSetting = (ConstraintLayout)view.findViewById(R.id.account_setting_my);
-        logoutMy = (Button)view.findViewById(R.id.logout_my);
-        aboutUs = (ConstraintLayout)view.findViewById(R.id.about_my);
-        update = (ConstraintLayout)view.findViewById(R.id.update_my);
+        ConstraintLayout privacy = (ConstraintLayout) view.findViewById(R.id.privacy_my);
+        ConstraintLayout messageAndRemind = (ConstraintLayout) view.findViewById(R.id.message_and_remind_my);
+        ConstraintLayout accountSetting = (ConstraintLayout) view.findViewById(R.id.account_setting_my);
+        Button logoutMy = (Button) view.findViewById(R.id.logout_my);
+        ConstraintLayout aboutUs = (ConstraintLayout) view.findViewById(R.id.about_my);
+        ConstraintLayout update = (ConstraintLayout) view.findViewById(R.id.update_my);
         update.setOnClickListener(this);
         aboutUs.setOnClickListener(this);
         logoutMy.setOnClickListener(this);
@@ -326,7 +301,7 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
         SharedPreferences pref = getContext().getSharedPreferences("data",MODE_PRIVATE);
         boolean judgeImg = pref.getBoolean("nof",false);
         SharedPreferences.Editor editor1 = pref.edit();
-        boolean isWorking = isWorked("com.example.tmappliction.DataSaveService");
+        boolean isWorking = isWorked();
         if(judgeImg) {
             saveData.setChecked(true);
             editor1.putBoolean("nof",true);
@@ -344,11 +319,12 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
         editor1.apply();
     }
 
-    private boolean isWorked(String className) {
+    private boolean isWorked() {
         ActivityManager myManager = (ActivityManager) getContext().getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+        assert myManager != null;
         ArrayList<ActivityManager.RunningServiceInfo> runningService = (ArrayList<ActivityManager.RunningServiceInfo>) myManager.getRunningServices(100);
         for (int i = 0; i < runningService.size(); i++) {
-            if (runningService.get(i).service.getClassName().toString().equals(className)) {
+            if (runningService.get(i).service.getClassName().equals("com.example.tmappliction.DataSaveService")) {
                 return true;
             }
         }
@@ -368,7 +344,7 @@ public class SettingFragment extends Fragment implements View.OnClickListener {
                         public void run() {
                             PHPMySQL conn = new PHPMySQL();
                             SharedPreferences pref = getContext().getSharedPreferences("userinfo", MODE_PRIVATE);
-                            String result = conn.updateData("userinfo", "img='" + imageName + "'", "phonenumber='" + pref.getString("phoneNumber", "") + "'");
+                            conn.updateData("userinfo", "img='" + imageName + "'", "phonenumber='" + pref.getString("phoneNumber", "") + "'");
                         }
                     }).start();
                     SharedPreferences s = getContext().getSharedPreferences("userinfo", MODE_PRIVATE);
