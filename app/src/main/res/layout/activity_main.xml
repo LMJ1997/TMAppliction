@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorAccent"
@@ -33,14 +34,17 @@
                     android:layout_width="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:layout_height="wrap_content"
-                    android:src="@android:drawable/ic_menu_compass"/>
+                    android:src="@android:drawable/ic_menu_compass"
+                    android:contentDescription="Today"
+                    tools:ignore="HardcodedText" />
                 <TextView
                     android:id="@+id/first_bottom_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginTop="5dp"
-                    android:text="今日"/>
+                    android:text="今日"
+                    tools:ignore="HardcodedText" />
             </LinearLayout>
         </RelativeLayout>
 
@@ -59,14 +63,17 @@
                     android:layout_width="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:layout_height="wrap_content"
-                    android:src="@android:drawable/ic_menu_edit"/>
+                    android:src="@android:drawable/ic_menu_edit"
+                    android:contentDescription="Statistics"
+                    tools:ignore="HardcodedText" />
                 <TextView
                     android:id="@+id/second_bottom_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginTop="5dp"
-                    android:text="统计"/>
+                    android:text="统计"
+                    tools:ignore="HardcodedText" />
             </LinearLayout>
         </RelativeLayout>
 
@@ -85,14 +92,17 @@
                     android:layout_width="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:layout_height="wrap_content"
-                    android:src="@android:drawable/ic_menu_agenda"/>
+                    android:src="@android:drawable/ic_menu_agenda"
+                    android:contentDescription="Agenda"
+                    tools:ignore="HardcodedText" />
                 <TextView
                     android:id="@+id/third_bottom_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginTop="5dp"
-                    android:text="日程"/>
+                    android:text="日程"
+                    tools:ignore="HardcodedText" />
             </LinearLayout>
         </RelativeLayout>
 
@@ -111,14 +121,17 @@
                     android:layout_width="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:layout_height="wrap_content"
-                    android:src="@android:drawable/ic_menu_myplaces"/>
+                    android:src="@android:drawable/ic_menu_myplaces"
+                    android:contentDescription="My"
+                    tools:ignore="HardcodedText" />
                 <TextView
                     android:id="@+id/fourth_bottom_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:layout_marginTop="5dp"
-                    android:text="我的"/>
+                    android:text="我的"
+                    tools:ignore="HardcodedText" />
             </LinearLayout>
         </RelativeLayout>
 
